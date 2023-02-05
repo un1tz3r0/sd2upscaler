@@ -186,7 +186,7 @@ def process_tiles(src, size, overlap, scale, processfunc, progressfunc=None):
 						#dest.show()
 		return dest
 
-def upscale_image(source_image, tile_size, tile_overlap, prompt, negative_prompt=None, cfg_scale=7.5, steps=10):
+def upscale_image(source_image, tile_size, tile_overlap, prompt, negative_prompt=None, guidance_scale=7.5, num_inference_steps=10):
 		from diffusers import StableDiffusionUpscalePipeline
 		# load model and scheduler
 		model_id = "stabilityai/stable-diffusion-x4-upscaler"
@@ -205,10 +205,10 @@ def upscale_image(source_image, tile_size, tile_overlap, prompt, negative_prompt
 				nonlocal pipeline
 				nonlocal prompt
 				nonlocal negative_prompt
-				nonlocal cfg_scale
-				nonlocal steps
+				nonlocal guidance_scale
+				nonlocal num_inference_steps
 				#tile.show()
-				result_image = pipeline(prompt=prompt, negative_prompt=negative_prompt, guidance_scale=cfg_scale, image=tile_image, num_inference_steps=steps, ).images[0]
+				result_image = pipeline(prompt=prompt, negative_prompt=negative_prompt, guidance_scale=guidance_scale, image=tile_image, num_inference_steps=num_inference_steps).images[0]
 				#result.show()
 				return result_image
 
@@ -237,10 +237,10 @@ from PIL import Image
 @click.option('--tile-size', default=128, help='The size of the tiles to use for processing.')
 @click.option('--tile-overlap', default=32, help='The overlap of the tiles to use for processing.')
 @click.option('--guidance-scale', default=9.0, help='The scale to use for processing.')
-@click.option('--inference-steps', default=5, help='The number of steps to use for processing.')
-def main(source_image, output_path, prompt, negative_prompt, tile_size, tile_overlap, guidance_scale, inference_steps):
+@click.option('--num-inference-steps', default=5, help='The number of steps to use for processing.')
+def main(source_image, output_path, prompt, negative_prompt, tile_size, tile_overlap, guidance_scale, num_inference_steps):
 		srcimg = Image.open(str(pathlib.Path(source_image).expanduser().resolve()))
-		destimg = upscale_image(source_image=srcimg, tile_size=tile_size, tile_overlap=tile_overlap, prompt=prompt, negative_prompt=negative_prompt, cfg_scale=cfg_scale, steps=steps)
+		destimg = upscale_image(source_image=srcimg, tile_size=tile_size, tile_overlap=tile_overlap, prompt=prompt, negative_prompt=negative_prompt, guidance_scale=guidance_scale, num_inference_steps=num_inference_steps)
 		destimg.save(str(pathlib.Path(output_image).expanduser().resolve()))
 
 
