@@ -1,6 +1,6 @@
 from PIL import Image
 from io import BytesIO
-from diffusers import StableDiffusionUpscalePipeline, StableDiffusionInpaintPipeline
+from diffusers import StableDiffusionUpscalePipeline #, StableDiffusionInpaintPipeline
 import torch
 import numpy as np
 from typing import Union, List, Tuple, Optional, Dict, Any, Callable, Iterable, Sequence, TypeVar, Generic, Type
@@ -54,7 +54,7 @@ def join_images(*images, vertical=False):
 # support functions for processing images using overlapping tiles
 # ----------------------------------------------------------------------------------------------
 
-def get_tile_start_and_count(image, tilesize, tileoverlap):
+def get_tile_start_and_count(image: Image.Image, tilesize: int, tileoverlap: int):
 		''' determine the number of tiles vertically and horizontally
 		needed to cover the image completely, and the top left corner
 		of the first tile so that the tile grid is centered in the image. '''
@@ -65,11 +65,16 @@ def get_tile_start_and_count(image, tilesize, tileoverlap):
 		y_start = (h - (y_tiles * (tilesize - tileoverlap) + tileoverlap)) // 2
 		return x_start, y_start, x_tiles, y_tiles
 
-def extract_square(im, position:Tuple[int, int], size:int, mode=None, background_color=(0,0,0,0)):
+def extract_square(
+			im: Image.Image, 
+			position:Tuple[int, int], 
+			size:int, 
+			mode=None, 
+			background_color=(0,0,0,0)
+		):
 		''' extract a square of the specified size from the image with top left corner at the specified position.
 		if square extends beyond the image bounds, the missing pixels of the returned square are filled with
 		background_color, which defaults to black '''
-		#with Image.open(image_path) as im:
 		width, height = im.size
 		x, y = position
 		# adjust the source rectangle and the destination offset
@@ -172,7 +177,7 @@ def process_tiles(src, size, overlap, scale, processfunc, progressfunc=None):
 						tout = processfunc(tile)
 
 						# match the output histogram to the non-out-of-bounds area of the source
-						tfix = Image.fromarray(exposure.match_histograms(np.asarray(tout.crop(toutrect)), np.asarray(tile.crop(tilerect).resize((srcw*scale, srch*scale))), channel_axis=2))
+						tfix = Image.fromarray(exposure.match_histograms(np.asarray(tout.crop(toutrect)), np.asarray(tile.crop(tilerect).resize((srcw*scale, srch*scale))) ))#, channel_axis=2))
 
 						paste_square(dest, tfix, tmask.crop(toutrect), ((tilex+x)*scale, (tiley+y)*scale))
 
@@ -186,8 +191,10 @@ def upscale_image(source_image, tile_size, tile_overlap, prompt, negative_prompt
 		# load model and scheduler
 		model_id = "stabilityai/stable-diffusion-x4-upscaler"
 		pipeline = StableDiffusionUpscalePipeline.from_pretrained(model_id) #torch_dtype="auto")
-		#pipeline.eval()
+		
+		# move to GPU and enable some optimisations
 		pipeline = pipeline.to("cuda")
+		pipeline.enable_attention_slicing()
 		pipeline.enable_xformers_memory_efficient_attention()
 		# type: ignore
 
@@ -223,23 +230,20 @@ import pathlib
 from PIL import Image
 
 @click.command()
+@click.argument('source_image', required=True)
+@click.argument('output_path', required=True)
 @click.option('--prompt', default="", help='The prompt to use for the image.')
 @click.option('--negative-prompt', default=None, help='The negative prompt to use for the image.')
 @click.option('--tile-size', default=128, help='The size of the tiles to use for processing.')
-@click.option('--tile-overlap', default=16, help='The overlap of the tiles to use for processing.')
-@click.option('--cfg-scale', default=7.5, help='The scale to use for processing.')
-@click.option('--steps', default=5, help='The number of steps to use for processing.')
-@click.argument('source_image', required=True)
-@click.argument('output_image', required=True)
-def main(prompt, negative_prompt, tile_size, tile_overlap, cfg_scale, steps, source_image, output_image):
+@click.option('--tile-overlap', default=32, help='The overlap of the tiles to use for processing.')
+@click.option('--guidance-scale', default=9.0, help='The scale to use for processing.')
+@click.option('--inference-steps', default=5, help='The number of steps to use for processing.')
+def main(source_image, output_path, prompt, negative_prompt, tile_size, tile_overlap, guidance_scale, inference_steps):
 		srcimg = Image.open(str(pathlib.Path(source_image).expanduser().resolve()))
-		uim = upscale_image(source_image=srcimg, tile_size=tile_size, tile_overlap=tile_overlap, prompt=prompt, negative_prompt=negative_prompt, cfg_scale=cfg_scale, steps=steps)
-		uim.save(str(pathlib.Path(output_image).expanduser().resolve()))
+		destimg = upscale_image(source_image=srcimg, tile_size=tile_size, tile_overlap=tile_overlap, prompt=prompt, negative_prompt=negative_prompt, cfg_scale=cfg_scale, steps=steps)
+		destimg.save(str(pathlib.Path(output_image).expanduser().resolve()))
+
+
 
 if __name__ == '__main__':
 		main()
-
-#prompt = "a portrait of a holgraphic anime girl wearing an PVC transparent holographic coat, vaporwave."
-#srcimg = Image.open("/home/owner/Pictures/prints 2023-01-07/grid_0_-_2023-01-01T163221.306-orig.png")
-#uim = upscale_image(source_image=srcimg, tile_size=128, tile_overlap=32, prompt=prompt, steps=5)
-#uim.show()
