@@ -1,8 +1,9 @@
 # sd2upscaler
 
-A tiling prompt-guided super-resolution CLI tool based on (huggingface)[huggingface.co] (diffusers)[huggingface.co/diffusers] library and (stability.ai)[stability.ai] (Stable Diffusion v2)[stabilityai/stable-diffusion-v2] upscaling and outpainting models.
+A tiling prompt-guided super-resolution and outpainting CLI tool based on [huggingface](huggingface.co) [diffusers](https://github.com/huggingface/diffusers) library and [stability.ai](https://stability.ai)'s [Stable Diffusion v2.1](https://github.com/stabilityai/stable-diffusion-v2) upscaling and outpainting models.
 
-=======
+---
+
 ```
 Usage: sd2upscaler.py [OPTIONS] [SOURCE_IMAGES]...
 
