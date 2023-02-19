@@ -1,7 +1,8 @@
-
-
 # sd2upscaler
 
+A tiling prompt-guided super-resolution CLI tool based on (huggingface)[huggingface.co] (diffusers)[huggingface.co/diffusers] library and (stability.ai)[stability.ai] (Stable Diffusion v2)[stabilityai/stable-diffusion-v2] upscaling and outpainting models.
+
+=======
 ```
 Usage: sd2upscaler.py [OPTIONS] [SOURCE_IMAGES]...
 
@@ -80,3 +81,4 @@ Options:
   --upscale-noise-level FLOAT     The noise level to use for upscaling.
   --help                          Show this message and exit.
 ```
+
