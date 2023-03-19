@@ -2,6 +2,12 @@
 
 A tiling prompt-guided super-resolution and outpainting CLI tool based on [huggingface](huggingface.co) [diffusers](https://github.com/huggingface/diffusers) library and [stability.ai](https://stability.ai)'s [Stable Diffusion v2.1](https://github.com/stabilityai/stable-diffusion-v2) upscaling and outpainting models.
 
+## Motivation
+
+I created this tool to help making large-format prints of AI artworks. The upscaling is nescessary to improve visual quality (a 600-dpi print on 13x19 paper looks terrible with a 1k x 1.5k pixel source image. Upscaling x4 to 4k x 6k is a drastic improvement) and adapt images to the paper aspect ratio which would otherwise need to be letterboxed or cropped (using outpainting, it's not perfect but is often preferable to cropping.)
+
+
+
 ---
 
 ```
